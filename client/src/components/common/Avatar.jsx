@@ -1,7 +1,10 @@
 import Image from 'next/image';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { FaCamera } from 'react-icons/fa';
 import ContextMenu from './ContextMenu';
+import PhotoPicker from './PhotoPicker';
+import PhotoLibrary from './PhotoLibrary';
+import CapturePhoto from './CapturePhoto';
 
 function Avatar({ type, image, setImage }) {
   const [hover, setHover] = React.useState(false);
@@ -10,6 +13,22 @@ function Avatar({ type, image, setImage }) {
     x: 0,
     y: 0,
   });
+  const [grabPhoto, setGrabPhoto] = React.useState(false);
+  const [showPhotoLibrary, setShowPhotoLibrary] = React.useState(false);
+  const [showCapturePhoto, setShowCapturePhoto] = React.useState(false);
+
+  useEffect(() => {
+    if (grabPhoto) {
+      const data = document.getElementById('photo-picker');
+      data.click();
+      document.body.onfocus = (e) => {
+        setTimeout(() => {
+          setGrabPhoto(false);
+        }, 1000);
+      }
+    }
+  }, [grabPhoto]);
+
 
   const showContextMenu = (e) => {
     e.preventDefault();
@@ -18,11 +37,33 @@ function Avatar({ type, image, setImage }) {
   };
 
   const contextMenuOptions = [
-    { name: 'Take Photo', callback: () => {} },
-    { name: 'Choose From Library', callback: () => {} },
-    { name: 'Upload Photo', callback: () => {} },
-    { name: 'Remove Photo', callback: () => {} },
+    { name: 'Take Photo', callback: () => {
+      setShowCapturePhoto(true);
+    } },
+    { name: 'Choose From Library', callback: () => {
+      setShowPhotoLibrary(true);
+    } },
+    { name: 'Upload Photo', callback: () => {
+      setGrabPhoto(true);
+    } },
+    { name: 'Remove Photo', callback: () => {
+      setImage("/default-avatar.png");
+    } },
   ];
+
+  const photoPickerChange = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    const data = document.createElement('img');
+    reader.onload = (e) => {
+      data.src = e.target.result;
+      data.setAttribute("data-src", e.target.result);
+    }
+    reader.readAsDataURL(file);
+    setTimeout(() => {
+      setImage(data.src)
+    }, 1000);
+  }
 
   return (
     <>
@@ -73,6 +114,9 @@ function Avatar({ type, image, setImage }) {
           setContextMenu={setIsContextMenuVisible}
         />
       )}
+      {showCapturePhoto && <CapturePhoto setImage={setImage} hide={setShowCapturePhoto} />}
+      {showPhotoLibrary && <PhotoLibrary setImage={setImage} hidePhotoLibrary={setShowPhotoLibrary} />}
+      {grabPhoto && <PhotoPicker onChange={photoPickerChange} />}
     </>
   );
 }

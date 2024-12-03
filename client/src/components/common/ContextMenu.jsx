@@ -1,8 +1,25 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 function ContextMenu({ options, cordinates, contextMenu, setContextMenu }) {
   const contextMenuRef = useRef(null);
-  const handleClick = (e, callback) => {};
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (event.target.id !== 'context-opener') {
+        if (contextMenuRef.current && !contextMenuRef.current.contains(event.target)) {
+          setContextMenu(false);
+        }
+      }
+    }
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
+  const handleClick = (e, callback) => {
+    e.stopPropagation();
+    setContextMenu(false);
+    callback();
+  };
 
   return (
     <div
