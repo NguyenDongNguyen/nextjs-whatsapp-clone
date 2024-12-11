@@ -10,10 +10,11 @@ import { useStateProvider } from '@/context/StateContext';
 import { firebaseAuth } from '@/utils/FirebaseConfig';
 import axios from 'axios';
 import { io } from 'socket.io-client';
+import SearchMessages from './Chat/SearchMessages';
 
 function Main() {
   const router = useRouter();
-  const [{ userInfo, currentChatUser }, dispatch] = useStateProvider();
+  const [{ userInfo, currentChatUser, messagesSearch }, dispatch] = useStateProvider();
   const [redirectLogin, setRedireactLogin] = useState(false);
   const [socketEvent, setSocketEvent] = useState(false);
   const socket = useRef();
@@ -76,7 +77,14 @@ function Main() {
   return (
     <div className='grid grid-cols-main h-screen w-screen max-h-screen max-w-full overflow-hidden'>
       <ChatList />
-      {currentChatUser ? <Chat /> : <Empty />}
+      {currentChatUser ? (
+        <div className={messagesSearch ? 'grid grid-cols-2' : 'grid-cols-2'}>
+          <Chat />
+          {messagesSearch && <SearchMessages />}
+        </div>
+      ) : (
+        <Empty />
+      )}
       <Chat />
     </div>
   );
